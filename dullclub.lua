@@ -1,152 +1,158 @@
---[[
-    Dull Club (Safe Edition)
-    Created by Minihodari12
-    GUI with key check, fly (in your own game), and more.
---]]
+-- Dull Club (Safe & Local Version)
+-- Created by Minihodari12
 
--- CONFIGURATION
-local correctKey = "MinihodariDeveloper"
-local discordInvite = "https://discord.gg/yourserver"
+-- CONFIG
+local KEY = "MinihodariDeveloper"
+local DISCORD_LINK = "https://discord.gg/yourserver"
 
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
+-- SERVICES
+local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
+local uis = game:GetService("UserInputService")
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "DullClubUI"
 
--- Create main GUI
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "DullClubSafe"
-
--- Draggable Frame
+-- DRAG FUNCTION
 local function makeDraggable(frame)
-	local dragToggle, dragInput, dragStart, startPos
+	local dragging, offset
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragToggle = true
-			dragStart = input.Position
-			startPos = frame.Position
+			dragging = true
+			offset = input.Position - frame.AbsolutePosition
 			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragToggle = false
-				end
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
 			end)
 		end
 	end)
-
-	frame.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = input
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragToggle then
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	uis.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			frame.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
 		end
 	end)
 end
 
--- Key Frame
-local keyFrame = Instance.new("Frame", screenGui)
+-- KEY GUI
+local keyFrame = Instance.new("Frame", gui)
 keyFrame.Size = UDim2.new(0, 300, 0, 150)
 keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
 keyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-keyFrame.BorderSizePixel = 0
 makeDraggable(keyFrame)
 
-local title = Instance.new("TextLabel", keyFrame)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Enter Key"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 20
+Instance.new("UICorner", keyFrame)
 
 local keyBox = Instance.new("TextBox", keyFrame)
-keyBox.Position = UDim2.new(0.1, 0, 0.4, 0)
-keyBox.Size = UDim2.new(0.8, 0, 0, 30)
-keyBox.PlaceholderText = "Enter key..."
-keyBox.Text = ""
-keyBox.Font = Enum.Font.SourceSans
+keyBox.PlaceholderText = "Enter Key"
+keyBox.Size = UDim2.new(0.8, 0, 0, 35)
+keyBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+keyBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+keyBox.TextColor3 = Color3.new(1, 1, 1)
+keyBox.Font = Enum.Font.SourceSansBold
 keyBox.TextSize = 18
-keyBox.TextColor3 = Color3.new(1,1,1)
-keyBox.BackgroundColor3 = Color3.fromRGB(60,60,60)
+Instance.new("UICorner", keyBox)
 
 local submit = Instance.new("TextButton", keyFrame)
-submit.Position = UDim2.new(0.25, 0, 0.7, 0)
-submit.Size = UDim2.new(0.5, 0, 0, 30)
 submit.Text = "Submit"
+submit.Size = UDim2.new(0.8, 0, 0, 30)
+submit.Position = UDim2.new(0.1, 0, 0.65, 0)
 submit.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-submit.TextColor3 = Color3.new(1,1,1)
+submit.TextColor3 = Color3.new(1, 1, 1)
 submit.Font = Enum.Font.SourceSansBold
 submit.TextSize = 18
+Instance.new("UICorner", submit)
 
 submit.MouseButton1Click:Connect(function()
-	if keyBox.Text == correctKey then
+	if keyBox.Text == KEY then
 		keyFrame:Destroy()
-		-- Load Main GUI
-		local mainFrame = Instance.new("Frame", screenGui)
-		mainFrame.Size = UDim2.new(0, 350, 0, 250)
-		mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+
+		-- MAIN GUI
+		local mainFrame = Instance.new("Frame", gui)
+		mainFrame.Size = UDim2.new(0, 400, 0, 300)
+		mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
 		mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 		makeDraggable(mainFrame)
+		Instance.new("UICorner", mainFrame)
 
-		local menuTitle = Instance.new("TextLabel", mainFrame)
-		menuTitle.Size = UDim2.new(1, 0, 0, 30)
-		menuTitle.Text = "Dull Club"
-		menuTitle.Font = Enum.Font.SourceSansBold
-		menuTitle.TextSize = 22
-		menuTitle.TextColor3 = Color3.new(1,1,1)
-		menuTitle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-
-		local function createButton(name, posY, callback)
+		local function createTab(name, posY, onClick)
 			local btn = Instance.new("TextButton", mainFrame)
-			btn.Position = UDim2.new(0.1, 0, posY, 0)
-			btn.Size = UDim2.new(0.8, 0, 0, 30)
 			btn.Text = name
-			btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+			btn.Size = UDim2.new(0.3, 0, 0, 30)
+			btn.Position = UDim2.new(0.05, 0, posY, 0)
+			btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 			btn.TextColor3 = Color3.new(1,1,1)
-			btn.Font = Enum.Font.SourceSansBold
+			btn.Font = Enum.Font.SourceSans
 			btn.TextSize = 18
-			btn.MouseButton1Click:Connect(callback)
+			Instance.new("UICorner", btn)
+			btn.MouseButton1Click:Connect(onClick)
 		end
 
-		createButton("Fly (toggle F)", 0.2, function()
-			local flying = false
-			local velocity = Instance.new("BodyVelocity")
-			velocity.MaxForce = Vector3.new(100000, 100000, 100000)
-			local character = player.Character or player.CharacterAdded:Wait()
-			local hrp = character:WaitForChild("HumanoidRootPart")
+		local contentLabel = Instance.new("TextLabel", mainFrame)
+		contentLabel.Size = UDim2.new(0.6, 0, 0.6, 0)
+		contentLabel.Position = UDim2.new(0.35, 0, 0.2, 0)
+		contentLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		contentLabel.TextColor3 = Color3.new(1,1,1)
+		contentLabel.TextWrapped = true
+		contentLabel.Font = Enum.Font.SourceSans
+		contentLabel.TextSize = 16
+		contentLabel.Text = "Welcome to Dull Club!"
+		contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+		contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+		contentLabel.ClipsDescendants = true
+		Instance.new("UICorner", contentLabel)
 
-			UserInputService.InputBegan:Connect(function(input)
-				if input.KeyCode == Enum.KeyCode.F then
-					flying = not flying
-					if flying then
-						velocity.Parent = hrp
-						while flying and character and hrp do
-							velocity.Velocity = (player:GetMouse().Hit.p - hrp.Position).unit * 100
-							wait()
-						end
-					else
-						velocity:Destroy()
-					end
+		-- Fly system
+		local flying = false
+		local bodyGyro, bodyVel
+
+		local function toggleFly()
+			local char = player.Character
+			if not char then return end
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			if not hrp then return end
+
+			if not flying then
+				flying = true
+				bodyGyro = Instance.new("BodyGyro", hrp)
+				bodyGyro.P = 9e4
+				bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+				bodyGyro.CFrame = hrp.CFrame
+
+				bodyVel = Instance.new("BodyVelocity", hrp)
+				bodyVel.Velocity = Vector3.new(0, 0, 0)
+				bodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+
+				while flying do
+					bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+					bodyVel.Velocity = workspace.CurrentCamera.CFrame.LookVector * 100
+					task.wait()
 				end
-			end)
+			else
+				flying = false
+				if bodyGyro then bodyGyro:Destroy() end
+				if bodyVel then bodyVel:Destroy() end
+			end
+		end
+
+		-- TABS
+		createTab("All Games", 0.1, function()
+			contentLabel.Text = "All Games Commands:\n\n- Fly (F key)\n- Fake Lag\n- Fake Kick (Only in your game)\n- Copy Discord"
 		end)
 
-		createButton("Update Log", 0.35, function()
-			print("Update Log: New features added.")
+		createTab("Update Log", 0.25, function()
+			contentLabel.Text = "Update Log:\n\n- Added Fly\n- GUI tabs improved\n- Key system enhanced"
 		end)
 
-		createButton("Copy Discord", 0.5, function()
-			setclipboard(discordInvite)
+		createTab("Discord", 0.4, function()
+			setclipboard(DISCORD_LINK)
+			contentLabel.Text = "Discord link copied to clipboard!"
 		end)
 
-		createButton("Credits", 0.65, function()
-			print("Created by Minihodari12.")
+		createTab("Fly", 0.55, function()
+			toggleFly()
+			contentLabel.Text = flying and "Fly enabled" or "Fly disabled"
+		end)
+
+		createTab("Credits", 0.7, function()
+			contentLabel.Text = "Script made by Minihodari12"
 		end)
 
 		-- Close Button
@@ -155,19 +161,22 @@ submit.MouseButton1Click:Connect(function()
 		closeBtn.Position = UDim2.new(1, -35, 0, 5)
 		closeBtn.Text = "X"
 		closeBtn.TextColor3 = Color3.new(1,0.5,0.5)
-		closeBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+		closeBtn.BackgroundColor3 = Color3.fromRGB(80, 20, 20)
+		Instance.new("UICorner", closeBtn)
+
 		closeBtn.MouseButton1Click:Connect(function()
 			local confirm = Instance.new("TextLabel", mainFrame)
 			confirm.Text = "Are you sure you want to close?"
-			confirm.Position = UDim2.new(0.1, 0, 0.8, 0)
-			confirm.Size = UDim2.new(0.8, 0, 0, 30)
+			confirm.Size = UDim2.new(0.9, 0, 0, 30)
+			confirm.Position = UDim2.new(0.05, 0, 0.85, 0)
 			confirm.TextColor3 = Color3.new(1,1,1)
-			confirm.BackgroundColor3 = Color3.fromRGB(80,0,0)
-			wait(2)
-			screenGui:Destroy()
+			confirm.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+			Instance.new("UICorner", confirm)
+			task.wait(2)
+			gui:Destroy()
 		end)
 
 	else
-		player:Kick("Wrong key! Ask the creator for the correct one.")
+		player:Kick("Wrong key. Ask the owner for the correct key.")
 	end
 end)
