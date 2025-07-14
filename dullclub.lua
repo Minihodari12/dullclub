@@ -10,12 +10,11 @@ gui.Name = "SimpleDullClub"
 gui.Parent = game.CoreGui
 
 local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 400, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -175)
+mainFrame.Size = UDim2.new(0, 400, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 mainFrame.Visible = false
 mainFrame.ClipsDescendants = true
-
 Instance.new("UICorner", mainFrame)
 
 local title = Instance.new("TextLabel", mainFrame)
@@ -40,7 +39,7 @@ closeBtn.MouseButton1Click:Connect(function()
     confirmFrame.Size = UDim2.new(0, 300, 0, 120)
     confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
     confirmFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    local corner = Instance.new("UICorner", confirmFrame)
+    Instance.new("UICorner", confirmFrame)
 
     local msg = Instance.new("TextLabel", confirmFrame)
     msg.Size = UDim2.new(1,0,0,50)
@@ -82,7 +81,6 @@ local keyFrame = Instance.new("Frame", gui)
 keyFrame.Size = UDim2.new(0, 300, 0, 150)
 keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
 keyFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-
 Instance.new("UICorner", keyFrame)
 
 local keyLabel = Instance.new("TextLabel", keyFrame)
@@ -134,7 +132,7 @@ keyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-local tabNames = {"Update Log", "All Games"}
+local tabNames = {"Update Log", "All Games", "Credits"}
 local tabs = {}
 
 local function clearContent()
@@ -197,11 +195,11 @@ local function startFakeLag()
             lagConnection:Disconnect()
             return
         end
-        local character = Player.Character
-        if character then
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.Velocity = Vector3.new(math.sin(tick()*5)*5,0,math.cos(tick()*5)*5)
+        for _, part in pairs(Player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 1
+                wait(0.05)
+                part.Transparency = 0
             end
         end
     end)
@@ -211,40 +209,101 @@ local function stopFakeLag()
     fakeLag = false
 end
 
+local noclip = false
+local noclipConnection
+
+local function toggleNoclip()
+    noclip = not noclip
+    local character = Player.Character or Player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    if noclip then
+        noclipConnection = RunService.Stepped:Connect(function()
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") and part.CanCollide == true then
+                    part.CanCollide = false
+                end
+            end
+        end)
+    else
+        noclipConnection:Disconnect()
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end
+
+local speedToggle = false
+local normalWalkSpeed = 16
+
+local function toggleSpeed()
+    speedToggle = not speedToggle
+    local character = Player.Character or Player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    if speedToggle then
+        humanoid.WalkSpeed = 50
+    else
+        humanoid.WalkSpeed = normalWalkSpeed
+    end
+end
+
+local invisibility = false
+local function toggleInvisibility()
+    invisibility = not invisibility
+    local character = Player.Character or Player.CharacterAdded:Wait()
+    for _, part in pairs(character:GetChildren()) do
+        if part:IsA("BasePart") or part:IsA("Decal") then
+            part.Transparency = invisibility and 1 or 0
+        end
+    end
+end
+
 local function buildUpdateLog()
     clearContent()
-    local content = Instance.new("TextLabel", mainFrame)
+    local content = Instance.new("Frame", mainFrame)
     content.Name = "Content"
-    content.Size = UDim2.new(0.9, 0, 0.7, 0)
-    content.Position = UDim2.new(0.05, 0, 0.25, 0)
-    content.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    content.TextColor3 = Color3.new(1,1,1)
-    content.Font = Enum.Font.Gotham
-    content.TextSize = 16
-    content.TextWrapped = true
-    content.Text = [[
-📢 Update Log:
-- Added Fly mode (WASD + Space + Shift to move)
-- Added Fake Lag effect
-- Added Fake Kick with reason prompt (kick is real!)
-- Added Teleport menu
-- Added Close (X) button with confirmation
-]]
+    content.Size = UDim2.new(1,0,1,-80)
+    content.Position = UDim2.new(0,0,0,40)
+    content.BackgroundTransparency = 1
+
+    local logText = Instance.new("TextLabel", content)
+    logText.Size = UDim2.new(1, -20, 1, -20)
+    logText.Position = UDim2.new(0,10,0,10)
+    logText.BackgroundTransparency = 1
+    logText.TextColor3 = Color3.new(1,1,1)
+    logText.Font = Enum.Font.Gotham
+    logText.TextSize = 16
+    logText.TextWrapped = true
+    logText.Text = [[
+Update Log:
+
+- Added fly with full directional control (WASD + Space/Shift)
+- Added fake lag toggle
+- Added fake kick (real kick with reason)
+- Added teleport to preset locations
+- Added noclip toggle
+- Added speed toggle
+- Added invisibility toggle
+- Added credits tab
+
+Press Right Control to toggle menu visibility.
+    ]]
 end
 
 local function buildAllGames()
     clearContent()
     local content = Instance.new("Frame", mainFrame)
     content.Name = "Content"
-    content.Size = UDim2.new(0.9, 0, 0.7, 0)
-    content.Position = UDim2.new(0.05, 0, 0.25, 0)
-    content.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    content.Size = UDim2.new(1,0,1,-80)
+    content.Position = UDim2.new(0,0,0,40)
+    content.BackgroundTransparency = 1
 
     -- Fly button
     local flyBtn = Instance.new("TextButton", content)
     flyBtn.Size = UDim2.new(0.8, 0, 0, 40)
-    flyBtn.Position = UDim2.new(0.1, 0, 0, 10)
-    flyBtn.Text = flying and "Stop Fly" or "Start Fly"
+    flyBtn.Position = UDim2.new(0.1, 0, 0, 0)
+    flyBtn.Text = "Toggle Fly"
     flyBtn.Font = Enum.Font.Gotham
     flyBtn.TextSize = 18
     flyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -253,7 +312,7 @@ local function buildAllGames()
     flyBtn.MouseButton1Click:Connect(function()
         if flying then
             stopFly()
-            flyBtn.Text = "Start Fly"
+            flyBtn.Text = "Toggle Fly"
         else
             startFly()
             flyBtn.Text = "Stop Fly"
@@ -263,8 +322,8 @@ local function buildAllGames()
     -- Fake Lag button
     local lagBtn = Instance.new("TextButton", content)
     lagBtn.Size = UDim2.new(0.8, 0, 0, 40)
-    lagBtn.Position = UDim2.new(0.1, 0, 0, 60)
-    lagBtn.Text = fakeLag and "Stop Fake Lag" or "Start Fake Lag"
+    lagBtn.Position = UDim2.new(0.1, 0, 0, 50)
+    lagBtn.Text = "Start Fake Lag"
     lagBtn.Font = Enum.Font.Gotham
     lagBtn.TextSize = 18
     lagBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -283,7 +342,7 @@ local function buildAllGames()
     -- Fake Kick button
     local kickBtn = Instance.new("TextButton", content)
     kickBtn.Size = UDim2.new(0.8, 0, 0, 40)
-    kickBtn.Position = UDim2.new(0.1, 0, 0, 110)
+    kickBtn.Position = UDim2.new(0.1, 0, 0, 100)
     kickBtn.Text = "Fake Kick"
     kickBtn.Font = Enum.Font.Gotham
     kickBtn.TextSize = 18
@@ -291,7 +350,6 @@ local function buildAllGames()
     kickBtn.TextColor3 = Color3.new(1,1,1)
 
     kickBtn.MouseButton1Click:Connect(function()
-        local reason = ""
         local inputFrame = Instance.new("Frame", gui)
         inputFrame.Size = UDim2.new(0, 300, 0, 120)
         inputFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
@@ -325,16 +383,16 @@ local function buildAllGames()
         submitBtn.TextSize = 18
 
         submitBtn.MouseButton1Click:Connect(function()
-            reason = reasonBox.Text
+            local reason = reasonBox.Text
             inputFrame:Destroy()
-            Player:Kick("Kicked: ".. (reason ~= "" and reason or "No reason given"))
+            Player:Kick("Kicked by fake kick. Reason: " .. (reason ~= "" and reason or "No reason given") .. "\nDiscord server coming soon!")
         end)
     end)
 
     -- Teleport button + submenu
     local tpBtn = Instance.new("TextButton", content)
     tpBtn.Size = UDim2.new(0.8, 0, 0, 40)
-    tpBtn.Position = UDim2.new(0.1, 0, 0, 160)
+    tpBtn.Position = UDim2.new(0.1, 0, 0, 150)
     tpBtn.Text = "Teleport"
     tpBtn.Font = Enum.Font.Gotham
     tpBtn.TextSize = 18
@@ -358,67 +416,139 @@ local function buildAllGames()
         tpLabel.TextSize = 18
 
         local locations = {
-            {Name = "Spawn", Position = Vector3.new(0,5,0)},
-            {Name = "High Tower", Position = Vector3.new(100,50,100)},
-            {Name = "Secret Room", Position = Vector3.new(-50,10,-50)},
+            {"Spawn", Vector3.new(0, 10, 0)},
+            {"Tower", Vector3.new(100, 50, 100)},
+            {"Secret Base", Vector3.new(-100, 20, -100)},
         }
 
         for i, loc in ipairs(locations) do
-            local locBtn = Instance.new("TextButton", tpFrame)
-            locBtn.Size = UDim2.new(0.8, 0, 0, 40)
-            locBtn.Position = UDim2.new(0.1, 0, 0, 40 + (i-1)*45)
-            locBtn.Text = loc.Name
-            locBtn.Font = Enum.Font.Gotham
-            locBtn.TextSize = 16
-            locBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            locBtn.TextColor3 = Color3.new(1,1,1)
+            local btn = Instance.new("TextButton", tpFrame)
+            btn.Size = UDim2.new(0.8, 0, 0, 40)
+            btn.Position = UDim2.new(0.1, 0, 0, 50 + (i-1)*45)
+            btn.Text = loc[1]
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 18
+            btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+            btn.TextColor3 = Color3.new(1,1,1)
 
-            locBtn.MouseButton1Click:Connect(function()
-                local char = Player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    char.HumanoidRootPart.CFrame = CFrame.new(loc.Position)
-                end
+            btn.MouseButton1Click:Connect(function()
+                local character = Player.Character or Player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                hrp.CFrame = CFrame.new(loc[2])
                 tpFrame:Destroy()
             end)
         end
 
-        local closeTP = Instance.new("TextButton", tpFrame)
-        closeTP.Size = UDim2.new(0.3, 0, 0, 30)
-        closeTP.Position = UDim2.new(0.35, 0, 1, -35)
-        closeTP.Text = "Close"
-        closeTP.Font = Enum.Font.GothamBold
-        closeTP.TextSize = 16
-        closeTP.BackgroundColor3 = Color3.fromRGB(170, 50, 50)
-        closeTP.TextColor3 = Color3.new(1,1,1)
-        closeTP.MouseButton1Click:Connect(function()
+        local closeTpBtn = Instance.new("TextButton", tpFrame)
+        closeTpBtn.Size = UDim2.new(0.2, 0, 0, 30)
+        closeTpBtn.Position = UDim2.new(0.4, 0, 1, -35)
+        closeTpBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
+        closeTpBtn.Text = "Close"
+        closeTpBtn.Font = Enum.Font.GothamBold
+        closeTpBtn.TextColor3 = Color3.new(1,1,1)
+        closeTpBtn.TextSize = 16
+
+        closeTpBtn.MouseButton1Click:Connect(function()
             tpFrame:Destroy()
         end)
     end)
 
+    -- Noclip toggle
+    local noclipBtn = Instance.new("TextButton", content)
+    noclipBtn.Size = UDim2.new(0.8, 0, 0, 40)
+    noclipBtn.Position = UDim2.new(0.1, 0, 0, 200)
+    noclipBtn.Text = "Toggle Noclip"
+    noclipBtn.Font = Enum.Font.Gotham
+    noclipBtn.TextSize = 18
+    noclipBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    noclipBtn.TextColor3 = Color3.new(1,1,1)
+
+    noclipBtn.MouseButton1Click:Connect(function()
+        toggleNoclip()
+    end)
+
+    -- Speed toggle
+    local speedBtn = Instance.new("TextButton", content)
+    speedBtn.Size = UDim2.new(0.8, 0, 0, 40)
+    speedBtn.Position = UDim2.new(0.1, 0, 0, 250)
+    speedBtn.Text = "Toggle Speed"
+    speedBtn.Font = Enum.Font.Gotham
+    speedBtn.TextSize = 18
+    speedBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    speedBtn.TextColor3 = Color3.new(1,1,1)
+
+    speedBtn.MouseButton1Click:Connect(function()
+        toggleSpeed()
+    end)
+
+    -- Invisibility toggle
+    local invisBtn = Instance.new("TextButton", content)
+    invisBtn.Size = UDim2.new(0.8, 0, 0, 40)
+    invisBtn.Position = UDim2.new(0.1, 0, 0, 300)
+    invisBtn.Text = "Toggle Invisibility"
+    invisBtn.Font = Enum.Font.Gotham
+    invisBtn.TextSize = 18
+    invisBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    invisBtn.TextColor3 = Color3.new(1,1,1)
+
+    invisBtn.MouseButton1Click:Connect(function()
+        toggleInvisibility()
+    end)
 end
 
-for i, tabName in ipairs(tabNames) do
-    local tabBtn = Instance.new("TextButton", mainFrame)
-    tabBtn.Size = UDim2.new(0.5, 0, 0, 30)
-    tabBtn.Position = UDim2.new((i-1)*0.5, 0, 0, 40)
-    tabBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    tabBtn.TextColor3 = Color3.new(1,1,1)
-    tabBtn.Font = Enum.Font.GothamBold
-    tabBtn.TextSize = 18
-    tabBtn.Text = tabName
+local function buildCredits()
+    clearContent()
+    local content = Instance.new("Frame", mainFrame)
+    content.Name = "Content"
+    content.Size = UDim2.new(1,0,1,-80)
+    content.Position = UDim2.new(0,0,0,40)
+    content.BackgroundTransparency = 1
 
-    tabBtn.MouseButton1Click:Connect(function()
-        if tabName == "Update Log" then
+    local creditsLabel = Instance.new("TextLabel", content)
+    creditsLabel.Size = UDim2.new(1, -20, 1, -20)
+    creditsLabel.Position = UDim2.new(0, 10, 0, 10)
+    creditsLabel.BackgroundTransparency = 1
+    creditsLabel.TextColor3 = Color3.new(1,1,1)
+    creditsLabel.Font = Enum.Font.GothamBold
+    creditsLabel.TextSize = 24
+    creditsLabel.TextWrapped = true
+    creditsLabel.Text = "Created by Minihodari12\nThank you for using the script!"
+end
+
+local buttonsFrame = Instance.new("Frame", mainFrame)
+buttonsFrame.Size = UDim2.new(1, 0, 0, 40)
+buttonsFrame.Position = UDim2.new(0, 0, 1, -40)
+buttonsFrame.BackgroundTransparency = 1
+
+local function createTabButton(name, pos)
+    local btn = Instance.new("TextButton", buttonsFrame)
+    btn.Size = UDim2.new(1/#tabNames, 0, 1, 0)
+    btn.Position = UDim2.new((pos-1)/#tabNames, 0, 0, 0)
+    btn.Text = name
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 18
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.TextColor3 = Color3.new(1,1,1)
+    return btn
+end
+
+for i, name in ipairs(tabNames) do
+    local btn = createTabButton(name, i)
+    btn.MouseButton1Click:Connect(function()
+        if name == "Update Log" then
             buildUpdateLog()
-        elseif tabName == "All Games" then
+        elseif name == "All Games" then
             buildAllGames()
+        elseif name == "Credits" then
+            buildCredits()
         end
     end)
 end
 
--- Show update log initially
+-- Start with Update Log tab
 buildUpdateLog()
 
+-- Toggle GUI visibility with Right Control
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.RightControl then
