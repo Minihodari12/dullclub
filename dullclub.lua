@@ -1,278 +1,192 @@
--- Dull Club Complete GUI Script with Key System and Features
+local KEY = "MinihodariDeveloper"
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local player = game.Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+-- UI Protection
+if not game:IsLoaded() then game.Loaded:Wait() end
 
-local VALID_KEY = "MinihodariDeveloper"
-local discordLink = "https://discord.gg/yourserver" -- vaihda oma linkki tähän
-
--- Utility function: luo tekstiä helposti
-local function CreateTextLabel(parent, size, pos, text, fontSize, bold, color, bgTransparency)
-	local label = Instance.new("TextLabel")
-	label.Size = size
-	label.Position = pos
-	label.Text = text
-	label.Font = fontSize or Enum.Font.GothamBold
-	label.TextSize = fontSize or 18
-	label.TextColor3 = color or Color3.new(1,1,1)
-	label.BackgroundTransparency = bgTransparency or 1
-	label.Parent = parent
-	label.TextWrapped = true
-	label.RichText = true
-	label.TextScaled = false
-	if bold then label.Font = Enum.Font.GothamBold end
-	return label
-end
-
-local function CreateButton(parent, size, pos, text, func)
-	local btn = Instance.new("TextButton")
-	btn.Size = size
-	btn.Position = pos
-	btn.Text = text
-	btn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 20
-	btn.Parent = parent
-	btn.AutoButtonColor = true
-	btn.MouseButton1Click:Connect(func)
-	return btn
-end
-
--- Alku GUI -- Avain kyselyikkuna
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "DullClubGui"
+-- Key GUI
+local screenGui = Instance.new("ScreenGui", game.CoreGui)
+screenGui.Name = "DullClubKeyGui"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local keyFrame = Instance.new("Frame", screenGui)
-keyFrame.Size = UDim2.new(0, 350, 0, 150)
-keyFrame.Position = UDim2.new(0.5, -175, 0.5, -75)
-keyFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+keyFrame.Size = UDim2.new(0, 300, 0, 150)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 keyFrame.BorderSizePixel = 0
-keyFrame.Active = true
-keyFrame.Draggable = true
 
-local keyLabel = CreateTextLabel(keyFrame, UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 10), "Enter Key:", 20, true)
-local keyTextBox = Instance.new("TextBox", keyFrame)
-keyTextBox.Size = UDim2.new(1, -20, 0, 40)
-keyTextBox.Position = UDim2.new(0, 10, 0, 50)
-keyTextBox.ClearTextOnFocus = false
-keyTextBox.Text = ""
-keyTextBox.Font = Enum.Font.GothamBold
-keyTextBox.TextSize = 22
-keyTextBox.BackgroundColor3 = Color3.fromRGB(25,25,25)
-keyTextBox.TextColor3 = Color3.new(1,1,1)
+local title = Instance.new("TextLabel", keyFrame)
+title.Text = "Dull Club Key System"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
 
-local keySubmitBtn = CreateButton(keyFrame, UDim2.new(0.4, 0, 0, 40), UDim2.new(0.3, 0, 0, 100), "Submit", function()
-	local enteredKey = keyTextBox.Text
-	if enteredKey == VALID_KEY then
-		keyFrame.Visible = false
-		mainFrame.Visible = true
+local textBox = Instance.new("TextBox", keyFrame)
+textBox.Size = UDim2.new(1, -20, 0, 30)
+textBox.Position = UDim2.new(0, 10, 0, 40)
+textBox.PlaceholderText = "Enter Key..."
+textBox.Text = ""
+textBox.TextScaled = true
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+textBox.TextColor3 = Color3.new(1,1,1)
+
+local submit = Instance.new("TextButton", keyFrame)
+submit.Text = "Submit"
+submit.Size = UDim2.new(0.5, -15, 0, 30)
+submit.Position = UDim2.new(0, 10, 0, 90)
+submit.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
+submit.TextColor3 = Color3.new(1,1,1)
+
+local info = Instance.new("TextLabel", keyFrame)
+info.Text = "Join Discord! Link coming soon."
+info.Size = UDim2.new(1, -20, 0, 20)
+info.Position = UDim2.new(0, 10, 1, -25)
+info.BackgroundTransparency = 1
+info.TextColor3 = Color3.fromRGB(200, 200, 200)
+info.TextScaled = true
+
+local function createMainUI()
+	screenGui:ClearAllChildren()
+	
+	local mainFrame = Instance.new("Frame", screenGui)
+	mainFrame.Size = UDim2.new(0, 400, 0, 300)
+	mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+	mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	mainFrame.BorderSizePixel = 0
+	mainFrame.Active = true
+	mainFrame.Draggable = true
+	
+	local topBar = Instance.new("Frame", mainFrame)
+	topBar.Size = UDim2.new(1, 0, 0, 30)
+	topBar.BackgroundColor3 = Color3.fromRGB(45,45,45)
+
+	local close = Instance.new("TextButton", topBar)
+	close.Size = UDim2.new(0, 30, 0, 30)
+	close.Position = UDim2.new(1, -30, 0, 0)
+	close.Text = "X"
+	close.TextColor3 = Color3.new(1,1,1)
+	close.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+	close.MouseButton1Click:Connect(function()
+		local confirm = Instance.new("TextButton", mainFrame)
+		confirm.Text = "Are you sure? Click to exit."
+		confirm.Size = UDim2.new(0, 200, 0, 40)
+		confirm.Position = UDim2.new(0.5, -100, 0.5, -20)
+		confirm.BackgroundColor3 = Color3.fromRGB(255,80,80)
+		confirm.TextColor3 = Color3.new(1,1,1)
+		confirm.MouseButton1Click:Connect(function()
+			screenGui:Destroy()
+		end)
+	end)
+
+	local tabAllGames = Instance.new("TextButton", topBar)
+	tabAllGames.Text = "All Games"
+	tabAllGames.Size = UDim2.new(0, 100, 0, 30)
+	tabAllGames.BackgroundColor3 = Color3.fromRGB(70,70,70)
+	tabAllGames.TextColor3 = Color3.new(1,1,1)
+
+	local tabUpdateLog = Instance.new("TextButton", topBar)
+	tabUpdateLog.Text = "Update Log"
+	tabUpdateLog.Size = UDim2.new(0, 100, 0, 30)
+	tabUpdateLog.Position = UDim2.new(0, 100, 0, 0)
+	tabUpdateLog.BackgroundColor3 = Color3.fromRGB(70,70,70)
+	tabUpdateLog.TextColor3 = Color3.new(1,1,1)
+
+	local contentFrame = Instance.new("Frame", mainFrame)
+	contentFrame.Position = UDim2.new(0, 0, 0, 30)
+	contentFrame.Size = UDim2.new(1, 0, 1, -30)
+	contentFrame.BackgroundTransparency = 1
+
+	local function clearContent()
+		for _, v in pairs(contentFrame:GetChildren()) do v:Destroy() end
+	end
+
+	local function showAllGames()
+		clearContent()
+
+		local function button(name, func, y)
+			local b = Instance.new("TextButton", contentFrame)
+			b.Size = UDim2.new(1, -20, 0, 30)
+			b.Position = UDim2.new(0, 10, 0, y)
+			b.Text = name
+			b.BackgroundColor3 = Color3.fromRGB(60,60,60)
+			b.TextColor3 = Color3.new(1,1,1)
+			b.MouseButton1Click:Connect(func)
+		end
+
+		button("Fly (toggle)", function()
+			local UIS = game:GetService("UserInputService")
+			local flying = false
+			local vel = Instance.new("BodyVelocity")
+			vel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+
+			UIS.InputBegan:Connect(function(key)
+				if key.KeyCode == Enum.KeyCode.F then
+					flying = not flying
+					if flying then
+						vel.Parent = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+						while flying and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") do
+							local move = Vector3.new(0, 0, 0)
+							if UIS:IsKeyDown(Enum.KeyCode.W) then move = move + Vector3.new(0,0,-1) end
+							if UIS:IsKeyDown(Enum.KeyCode.S) then move = move + Vector3.new(0,0,1) end
+							if UIS:IsKeyDown(Enum.KeyCode.A) then move = move + Vector3.new(-1,0,0) end
+							if UIS:IsKeyDown(Enum.KeyCode.D) then move = move + Vector3.new(1,0,0) end
+							if UIS:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0,1,0) end
+							if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then move = move + Vector3.new(0,-1,0) end
+							vel.Velocity = move * 50
+							task.wait()
+						end
+						vel.Parent = nil
+					end
+				end
+			end)
+		end, 10)
+
+		button("Fake Kick", function()
+			LocalPlayer:Kick("Fake Kick: Disconnected by Admin")
+		end, 50)
+
+		button("Teleport to Spawn", function()
+			local char = LocalPlayer.Character
+			if char and workspace:FindFirstChild("SpawnLocation") then
+				char:MoveTo(workspace.SpawnLocation.Position)
+			end
+		end, 90)
+
+		button("WalkSpeed 50", function()
+			LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 50
+		end, 130)
+
+		button("Reset WalkSpeed", function()
+			LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 16
+		end, 170)
+
+	end
+
+	local function showUpdateLog()
+		clearContent()
+		local log = Instance.new("TextLabel", contentFrame)
+		log.Text = "✅ Update Log:\n- GUI Menu\n- Fly (F key)\n- Key Protection\n- Discord Coming Soon"
+		log.Size = UDim2.new(1, -20, 1, -20)
+		log.Position = UDim2.new(0, 10, 0, 10)
+		log.TextColor3 = Color3.new(1,1,1)
+		log.BackgroundTransparency = 1
+		log.TextWrapped = true
+		log.TextYAlignment = Enum.TextYAlignment.Top
+	end
+
+	tabAllGames.MouseButton1Click:Connect(showAllGames)
+	tabUpdateLog.MouseButton1Click:Connect(showUpdateLog)
+
+	showAllGames()
+end
+
+submit.MouseButton1Click:Connect(function()
+	if textBox.Text == KEY then
+		createMainUI()
 	else
-		player:Kick("Invalid key! Contact Minihodari12 for the correct code.")
+		LocalPlayer:Kick("❌ Wrong key. Ask the creator for access.")
 	end
-end)
-
--- Pää GUI
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 420, 0, 360)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -180)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainFrame.Visible = false
-mainFrame.Active = true
-mainFrame.Draggable = true
-
--- Sulje-nappi (X) ja vahvistusruutu
-local closeBtn = CreateButton(mainFrame, UDim2.new(0, 30, 0, 30), UDim2.new(1, -35, 0, 5), "X", function()
-	if screenGui:FindFirstChild("ConfirmClose") then return end
-	local confirmFrame = Instance.new("Frame", screenGui)
-	confirmFrame.Name = "ConfirmClose"
-	confirmFrame.Size = UDim2.new(0, 300, 0, 130)
-	confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -65)
-	confirmFrame.BackgroundColor3 = Color3.fromRGB(45,45,45)
-	confirmFrame.BorderSizePixel = 0
-	confirmFrame.Active = true
-	confirmFrame.Draggable = true
-
-	local confirmLabel = CreateTextLabel(confirmFrame, UDim2.new(1, -20, 0, 60), UDim2.new(0, 10, 0, 10), "Are you sure you want to close the script?", 18, true)
-
-	local yesBtn = CreateButton(confirmFrame, UDim2.new(0.4, 0, 0, 40), UDim2.new(0.1, 0, 1, -50), "Yes", function()
-		screenGui:Destroy()
-	end)
-
-	local noBtn = CreateButton(confirmFrame, UDim2.new(0.4, 0, 0, 40), UDim2.new(0.5, 0, 1, -50), "No", function()
-		confirmFrame:Destroy()
-	end)
-end)
-
--- Välilehdet
-local tabs = {"Update Log", "All Games", "Fly", "Credits", "Discord"}
-local tabButtons = {}
-local contentFrames = {}
-
-local tabHeight = 35
-local tabWidth = 80
-local tabSpacing = 5
-
-for i, tabName in ipairs(tabs) do
-	local btn = CreateButton(mainFrame, UDim2.new(0, tabWidth, 0, tabHeight), UDim2.new(0, (tabWidth + tabSpacing) * (i-1) + 10, 0, 45), tabName, function()
-		for _, frame in pairs(contentFrames) do
-			frame.Visible = false
-		end
-		contentFrames[tabName].Visible = true
-	end)
-	tabButtons[tabName] = btn
-
-	local frame = Instance.new("Frame", mainFrame)
-	frame.Size = UDim2.new(1, -20, 1, -90)
-	frame.Position = UDim2.new(0, 10, 0, 90)
-	frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	frame.Visible = false
-	contentFrames[tabName] = frame
-end
-
--- Aloita näyttämällä Update Log
-contentFrames["Update Log"].Visible = true
-
--- Update Log -sisältö
-local updateLogLabel = CreateTextLabel(contentFrames["Update Log"], UDim2.new(1, -20, 1, -20), UDim2.new(0, 10, 0, 10), 
-[[
-Update Log:
-- Added key system with kick on invalid key
-- Improved Fly with WASD + Space/Ctrl
-- Added All Games commands (Heal, Fake Kick)
-- Discord tab with copy link button
-- Draggable GUI & close confirmation dialog
-]], 18, false)
-
--- All Games -komennot
-local allGamesFrame = contentFrames["All Games"]
-
-local function healPlayer()
-	local char = player.Character
-	if char then
-		local hum = char:FindFirstChild("Humanoid")
-		if hum and hum.Health < hum.MaxHealth then
-			hum.Health = hum.MaxHealth
-		end
-	end
-end
-
-CreateButton(allGamesFrame, UDim2.new(0.9, 0, 0, 40), UDim2.new(0.05, 0, 0, 10), "Heal Player", healPlayer)
-
-CreateButton(allGamesFrame, UDim2.new(0.9, 0, 0, 40), UDim2.new(0.05, 0, 0, 60), "Fake Kick (Real Kick!)", function()
-	player:Kick("You got kicked by Fake Kick command!")
-end)
-
--- Lisää demo komentoja All Gamesiin:
-CreateButton(allGamesFrame, UDim2.new(0.9, 0, 0, 40), UDim2.new(0.05, 0, 0, 110), "Teleport to Spawn", function()
-	local char = player.Character
-	if char and char:FindFirstChild("HumanoidRootPart") then
-		char.HumanoidRootPart.CFrame = workspace.SpawnLocation.CFrame
-	end
-end)
-
-CreateButton(allGamesFrame, UDim2.new(0.9, 0, 0, 40), UDim2.new(0.05, 0, 0, 160), "Set WalkSpeed to 50", function()
-	local char = player.Character
-	if char then
-		local hum = char:FindFirstChild("Humanoid")
-		if hum then
-			hum.WalkSpeed = 50
-		end
-	end
-end)
-
-CreateButton(allGamesFrame, UDim2.new(0.9, 0, 0, 40), UDim2.new(0.05, 0, 0, 210), "Reset WalkSpeed", function()
-	local char = player.Character
-	if char then
-		local hum = char:FindFirstChild("Humanoid")
-		if hum then
-			hum.WalkSpeed = 16
-		end
-	end
-end)
-
--- Fly välilehti
-local flyFrame = contentFrames["Fly"]
-
-local flying = false
-local flySpeed = 50
-local flyDirection = Vector3.new(0,0,0)
-local playerRoot = nil
-
-local function startFly()
-	local char = player.Character
-	if not char then return end
-	playerRoot = char:FindFirstChild("HumanoidRootPart")
-	if not playerRoot then return end
-	flying = true
-end
-
-local function stopFly()
-	flying = false
-	if playerRoot then
-		playerRoot.AssemblyLinearVelocity = Vector3.new(0,0,0)
-	end
-end
-
-local flyToggleBtn = CreateButton(flyFrame, UDim2.new(0.5, 0, 0, 50), UDim2.new(0.25, 0, 0, 20), "Toggle Fly", function()
-	if flying then
-		stopFly()
-		flyToggleBtn.Text = "Start Fly"
-	else
-		startFly()
-		flyToggleBtn.Text = "Stop Fly"
-	end
-end)
-
-local flySpeedLabel = CreateTextLabel(flyFrame, UDim2.new(0.8, 0, 0, 30), UDim2.new(0.1, 0, 0, 80), "Fly Speed: 50", 18)
-
--- Liiketoiminta lentoa varten
-local moveDir = Vector3.new()
-
-UserInputService.InputBegan:Connect(function(input, gpe)
-	if gpe then return end
-	if input.KeyCode == Enum.KeyCode.W then moveDir = moveDir + Vector3.new(0,0,-1) end
-	if input.KeyCode == Enum.KeyCode.S then moveDir = moveDir + Vector3.new(0,0,1) end
-	if input.KeyCode == Enum.KeyCode.A then moveDir = moveDir + Vector3.new(-1,0,0) end
-	if input.KeyCode == Enum.KeyCode.D then moveDir = moveDir + Vector3.new(1,0,0) end
-	if input.KeyCode == Enum.KeyCode.Space then moveDir = moveDir + Vector3.new(0,1,0) end
-	if input.KeyCode == Enum.KeyCode.LeftControl then moveDir = moveDir + Vector3.new(0,-1,0) end
-end)
-
-UserInputService.InputEnded:Connect(function(input, gpe)
-	if gpe then return end
-	if input.KeyCode == Enum.KeyCode.W then moveDir = moveDir - Vector3.new(0,0,-1) end
-	if input.KeyCode == Enum.KeyCode.S then moveDir = moveDir - Vector3.new(0,0,1) end
-	if input.KeyCode == Enum.KeyCode.A then moveDir = moveDir - Vector3.new(-1,0,0) end
-	if input.KeyCode == Enum.KeyCode.D then moveDir = moveDir - Vector3.new(1,0,0) end
-	if input.KeyCode == Enum.KeyCode.Space then moveDir = moveDir - Vector3.new(0,1,0) end
-	if input.KeyCode == Enum.KeyCode.LeftControl then moveDir = moveDir - Vector3.new(0,-1,0) end
-end)
-
-RunService.RenderStepped:Connect(function()
-	if flying and playerRoot then
-		playerRoot.Velocity = moveDir.Unit * flySpeed
-		if moveDir.Magnitude == 0 then
-			playerRoot.Velocity = Vector3.new(0,0,0)
-		end
-	end
-end)
-
--- Credits välilehti
-local creditsFrame = contentFrames["Credits"]
-local creditsText = CreateTextLabel(creditsFrame, UDim2.new(1, -20, 1, -20), UDim2.new(0, 10, 0, 10),
-"Script by Minihodari12\nThanks for using!\n\nHave fun!",
-18, false)
-
--- Discord välilehti
-local discordFrame = contentFrames["Discord"]
-
-local discordLabel = CreateTextLabel(discordFrame, UDim2.new(1, -20, 0, 50), UDim2.new(0, 10, 0, 10),
-"Join our Discord server!\nClick the button below to copy the invite link.", 18, false)
-
-local copyBtn = CreateButton(discordFrame, UDim2.new(0.6, 0, 0, 50), UDim2.new(0.2, 0, 0, 70), "Copy Link", function()
-	setclipboard(discordLink)
 end)
