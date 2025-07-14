@@ -3,28 +3,24 @@ local UserInputService = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
 
--- Kovakoodattu avain
 local VALID_KEY = "MinihodariDeveloper"
 
--- Luodaan GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "DullClubGUI"
 gui.ResetOnSpawn = false
 gui.Parent = Player:WaitForChild("PlayerGui")
 
--- Pääkehys
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 400, 0, 400)
 mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.Active = true
 mainFrame.Parent = gui
-mainFrame.Visible = false -- alkaa näkymättömänä
+mainFrame.Visible = false
 
--- Otsikko
 local titleLabel = Instance.new("TextLabel", mainFrame)
 titleLabel.Size = UDim2.new(1, 0, 0, 30)
-titleLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
+titleLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 titleLabel.TextColor3 = Color3.new(1,1,1)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 20
@@ -32,7 +28,6 @@ titleLabel.Text = "Dull Club"
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.PaddingLeft = UDim.new(0, 10)
 
--- Sulje nappi
 local closeButton = Instance.new("TextButton", mainFrame)
 closeButton.Size = UDim2.new(0, 30, 0, 30)
 closeButton.Position = UDim2.new(1, -35, 0, 0)
@@ -42,7 +37,6 @@ closeButton.Font = Enum.Font.GothamBold
 closeButton.TextSize = 20
 closeButton.Text = "X"
 
--- Sulje varmistusfunktio
 local function askCloseConfirm()
     local confirmFrame = Instance.new("Frame", gui)
     confirmFrame.Size = UDim2.new(0, 300, 0, 120)
@@ -88,7 +82,6 @@ end
 
 closeButton.MouseButton1Click:Connect(askCloseConfirm)
 
--- Drag toiminnot mainFramelle
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -124,13 +117,11 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- CONTENT AREA (tähän eri valikot renderöidään)
 local contentFrame = Instance.new("Frame", mainFrame)
 contentFrame.Size = UDim2.new(1, -20, 1, -70)
 contentFrame.Position = UDim2.new(0, 10, 0, 40)
 contentFrame.BackgroundTransparency = 1
 
--- Apufunktio contentin tyhjentämiseen
 local function clearContent()
     for _, child in pairs(contentFrame:GetChildren()) do
         if not (child:IsA("UIListLayout") or child:IsA("UIPadding")) then
@@ -139,42 +130,56 @@ local function clearContent()
     end
 end
 
--- TAB-napit frame
 local tabFrame = Instance.new("Frame", mainFrame)
 tabFrame.Size = UDim2.new(1, 0, 0, 30)
 tabFrame.Position = UDim2.new(0, 0, 1, -30)
 tabFrame.BackgroundTransparency = 1
 
-local tabs = {"Update Log", "All Games", "Credits"}
+local tabs = {"Update Log", "All Games", "Fly", "Credits"}
 local tabButtons = {}
 
-local function createTabButton(name, idx)
-    local btn = Instance.new("TextButton", tabFrame)
-    btn.Size = UDim2.new(1/#tabs, 0, 1, 0)
-    btn.Position = UDim2.new((idx-1)/#tabs, 0, 0, 0)
-    btn.Text = name
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    btn.TextColor3 = Color3.new(1,1,1)
-    return btn
-end
+local noclipEnabled = false
+local speedEnabled = false
+local invisEnabled = false
 
-for i, tabName in ipairs(tabs) do
-    local btn = createTabButton(tabName, i)
-    btn.MouseButton1Click:Connect(function()
-        if tabName == "Update Log" then
-            showUpdateLog()
-        elseif tabName == "All Games" then
-            showAllGames()
-        elseif tabName == "Credits" then
-            showCredits()
+local function toggleNoclip()
+    noclipEnabled = not noclipEnabled
+    local char = Player.Character
+    if not char then return end
+    for _, part in pairs(char:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = not noclipEnabled
         end
-    end)
-    table.insert(tabButtons, btn)
+    end
 end
 
--- FUNKTIOT NÄYTÖILLE
+local function toggleSpeed()
+    speedEnabled = not speedEnabled
+    local char = Player.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        if speedEnabled then
+            hum.WalkSpeed = 50
+        else
+            hum.WalkSpeed = 16
+        end
+    end
+end
+
+local function toggleInvisibility()
+    invisEnabled = not invisEnabled
+    local char = Player.Character
+    if not char then return end
+    for _, part in pairs(char:GetChildren()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            part.Transparency = invisEnabled and 1 or 0
+            if part:FindFirstChildOfClass("Decal") then
+                part:FindFirstChildOfClass("Decal").Transparency = invisEnabled and 1 or 0
+            end
+        end
+    end
+end
 
 local function showUpdateLog()
     clearContent()
@@ -219,98 +224,20 @@ local function showFlyMenu()
     for i, loc in ipairs(locations) do
         local btn = Instance.new("TextButton", contentFrame)
         btn.Size = UDim2.new(0.8, 0, 0, 35)
-        btn.Position = UDim2.new(0.1, 0, 0, 40 + (i-1)*40)
-        btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+        btn.Position = UDim2.new(0.1, 0, 0, 40 + (i-1)*45)
+        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         btn.TextColor3 = Color3.new(1,1,1)
         btn.Font = Enum.Font.Gotham
-        btn.TextSize = 16
+        btn.TextSize = 18
         btn.Text = loc[1]
-        btn.AutoButtonColor = true
-
         btn.MouseButton1Click:Connect(function()
             flyToPosition(loc[2])
         end)
     end
 end
 
--- Fake kick toimii oikeasti kickkaamalla pelaajan pelistä
 local function fakeKick()
-    clearContent()
-    local label = Instance.new("TextLabel", contentFrame)
-    label.Size = UDim2.new(1,0,0,30)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.new(1,1,1)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 18
-    label.Text = "Enter reason for kick:"
-
-    local reasonBox = Instance.new("TextBox", contentFrame)
-    reasonBox.Size = UDim2.new(0.8, 0, 0, 30)
-    reasonBox.Position = UDim2.new(0.1, 0, 0, 40)
-    reasonBox.ClearTextOnFocus = false
-    reasonBox.PlaceholderText = "Reason..."
-    reasonBox.Text = ""
-
-    local kickBtn = Instance.new("TextButton", contentFrame)
-    kickBtn.Size = UDim2.new(0.8, 0, 0, 35)
-    kickBtn.Position = UDim2.new(0.1, 0, 0, 80)
-    kickBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
-    kickBtn.TextColor3 = Color3.new(1,1,1)
-    kickBtn.Font = Enum.Font.GothamBold
-    kickBtn.TextSize = 18
-    kickBtn.Text = "Kick Player"
-
-    kickBtn.MouseButton1Click:Connect(function()
-        local reason = reasonBox.Text
-        if reason == "" then
-            reason = "No reason provided"
-        end
-        Player:Kick("FakeKick: "..reason)
-    end)
-end
-
--- All Games -valikko
-local noclipEnabled = false
-local speedEnabled = false
-local invisEnabled = false
-
-local function toggleNoclip()
-    noclipEnabled = not noclipEnabled
-    local char = Player.Character
-    if not char then return end
-    for _, part in pairs(char:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = not noclipEnabled
-        end
-    end
-end
-
-local function toggleSpeed()
-    speedEnabled = not speedEnabled
-    local char = Player.Character
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        if speedEnabled then
-            hum.WalkSpeed = 50
-        else
-            hum.WalkSpeed = 16
-        end
-    end
-end
-
-local function toggleInvisibility()
-    invisEnabled = not invisEnabled
-    local char = Player.Character
-    if not char then return end
-    for _, part in pairs(char:GetChildren()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-            part.Transparency = invisEnabled and 1 or 0
-            if part:FindFirstChildOfClass("Decal") then
-                part:FindFirstChildOfClass("Decal").Transparency = invisEnabled and 1 or 0
-            end
-        end
-    end
+    Player:Kick("You have been kicked (fake kick simulation).")
 end
 
 local function showAllGames()
@@ -355,7 +282,6 @@ local function showAllGames()
         invisBtn.Text = "Toggle Invisibility (Currently "..(invisEnabled and "ON" or "OFF")..")"
     end)
 
-    -- Fake kick -nappi
     local fkBtn = Instance.new("TextButton", contentFrame)
     fkBtn.Size = UDim2.new(0.8, 0, 0, 35)
     fkBtn.Position = UDim2.new(0.1, 0, 0, 145)
@@ -383,6 +309,36 @@ Discord server coming soon!
 ]]
 end
 
+-- Tab buttons creation and handling
+local function selectTab(tabName)
+    if tabName == "Update Log" then
+        showUpdateLog()
+    elseif tabName == "All Games" then
+        showAllGames()
+    elseif tabName == "Fly" then
+        showFlyMenu()
+    elseif tabName == "Credits" then
+        showCredits()
+    end
+end
+
+for i, tabName in ipairs(tabs) do
+    local btn = Instance.new("TextButton", tabFrame)
+    btn.Size = UDim2.new(0, 100, 1, 0)
+    btn.Position = UDim2.new(0, (i-1)*100, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Text = tabName
+
+    btn.MouseButton1Click:Connect(function()
+        selectTab(tabName)
+    end)
+
+    tabButtons[tabName] = btn
+end
+
 -- Key Entry UI
 local keyFrame = Instance.new("Frame", gui)
 keyFrame.Size = UDim2.new(0, 350, 0, 150)
@@ -390,7 +346,6 @@ keyFrame.Position = UDim2.new(0.5, -175, 0.5, -75)
 keyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 keyFrame.BorderSizePixel = 0
 keyFrame.Active = true
-keyFrame.Parent = gui
 
 local keyLabel = Instance.new("TextLabel", keyFrame)
 keyLabel.Size = UDim2.new(1, 0, 0, 40)
@@ -424,19 +379,5 @@ submitBtn.MouseButton1Click:Connect(function()
         showUpdateLog()
     else
         Player:Kick("Invalid key! Contact Minihodari12 for the key. Discord server coming soon!")
-    end
-end)
-
--- Näppäimistön toggle avaimelle (esim. RightControl)
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        if mainFrame.Visible then
-            mainFrame.Visible = false
-        else
-            mainFrame.Visible = true
-            keyFrame:Destroy() -- poistetaan jos keyFrame on vielä olemassa
-            showUpdateLog()
-        end
     end
 end)
