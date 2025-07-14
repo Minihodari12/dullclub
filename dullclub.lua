@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local correctKey = "MinihodariDeveloper"
 
@@ -27,6 +28,59 @@ title.Text = "Simple DullClub"
 title.Font = Enum.Font.GothamBold
 title.TextColor3 = Color3.new(1,1,1)
 title.TextSize = 24
+
+-- Sulje-nappi (X)
+local closeBtn = Instance.new("TextButton", mainFrame)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.TextSize = 20
+
+closeBtn.MouseButton1Click:Connect(function()
+    local confirmFrame = Instance.new("Frame", gui)
+    confirmFrame.Size = UDim2.new(0, 300, 0, 120)
+    confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
+    confirmFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    local corner = Instance.new("UICorner", confirmFrame)
+
+    local msg = Instance.new("TextLabel", confirmFrame)
+    msg.Size = UDim2.new(1,0,0,50)
+    msg.Position = UDim2.new(0,0,0,10)
+    msg.BackgroundTransparency = 1
+    msg.TextColor3 = Color3.new(1,1,1)
+    msg.Font = Enum.Font.GothamBold
+    msg.TextSize = 20
+    msg.Text = "Are you sure you want to close?"
+
+    local yesBtn = Instance.new("TextButton", confirmFrame)
+    yesBtn.Size = UDim2.new(0.4,0,0,35)
+    yesBtn.Position = UDim2.new(0.1,0,0,70)
+    yesBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
+    yesBtn.Text = "Yes"
+    yesBtn.Font = Enum.Font.GothamBold
+    yesBtn.TextColor3 = Color3.new(1,1,1)
+    yesBtn.TextSize = 18
+
+    local noBtn = Instance.new("TextButton", confirmFrame)
+    noBtn.Size = UDim2.new(0.4,0,0,35)
+    noBtn.Position = UDim2.new(0.5,0,0,70)
+    noBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
+    noBtn.Text = "No"
+    noBtn.Font = Enum.Font.GothamBold
+    noBtn.TextColor3 = Color3.new(1,1,1)
+    noBtn.TextSize = 18
+
+    yesBtn.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    noBtn.MouseButton1Click:Connect(function()
+        confirmFrame:Destroy()
+    end)
+end)
 
 -- Key syöttö ikkuna
 local keyFrame = Instance.new("Frame", gui)
@@ -97,6 +151,47 @@ local function clearContent()
     end
 end
 
+local flying = false
+local bodyVelocity
+local flyConnection
+
+local function startFly()
+    if flying then return end
+    local character = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+
+    flying = true
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bodyVelocity.Velocity = Vector3.new(0,0,0)
+    bodyVelocity.Parent = hrp
+
+    flyConnection = RunService.Heartbeat:Connect(function()
+        if not flying then
+            bodyVelocity:Destroy()
+            flyConnection:Disconnect()
+            return
+        end
+        local moveDir = Vector3.new(0,0,0)
+        if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + hrp.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - hrp.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - hrp.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + hrp.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0,1,0) end
+        if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0,1,0) end
+
+        if moveDir.Magnitude > 0 then
+            bodyVelocity.Velocity = moveDir.Unit * 60
+        else
+            bodyVelocity.Velocity = Vector3.new(0,0,0)
+        end
+    end)
+end
+
+local function stopFly()
+    flying = false
+end
+
 local function buildUpdateLog()
     clearContent()
     local content = Instance.new("TextLabel", mainFrame)
@@ -110,97 +205,11 @@ local function buildUpdateLog()
     content.TextWrapped = true
     content.Text = [[
 📢 Update Log:
-- Added Fly with teleport selection
-- Simple All Games menu
+- Added Fly mode (WASD + Space + Shift to move)
+- Added tab switching with working buttons
+- Added Close (X) button with confirmation
 - Secure key check
 ]]
-end
-
-local flying = false
-local bodyVelocity
-
-local function flyMode()
-    local character = Player.Character or Player.CharacterAdded:Wait()
-    local hrp = character:WaitForChild("HumanoidRootPart")
-
-    -- Kysy teleporttipaikka tekstikentällä
-    local teleportFrame = Instance.new("Frame", gui)
-    teleportFrame.Size = UDim2.new(0, 300, 0, 150)
-    teleportFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-    teleportFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    teleportFrame.Name = "TeleportFrame"
-    local corner = Instance.new("UICorner", teleportFrame)
-
-    local label = Instance.new("TextLabel", teleportFrame)
-    label.Size = UDim2.new(1,0,0,40)
-    label.BackgroundTransparency = 1
-    label.Text = "Enter Teleport Position (x,y,z):"
-    label.Font = Enum.Font.GothamBold
-    label.TextColor3 = Color3.new(1,1,1)
-    label.TextSize = 18
-
-    local inputBox = Instance.new("TextBox", teleportFrame)
-    inputBox.Size = UDim2.new(0.8,0,0,40)
-    inputBox.Position = UDim2.new(0.1,0,0,50)
-    inputBox.ClearTextOnFocus = false
-    inputBox.Font = Enum.Font.Gotham
-    inputBox.TextSize = 18
-    inputBox.PlaceholderText = "Example: 0,10,0"
-
-    local btn = Instance.new("TextButton", teleportFrame)
-    btn.Size = UDim2.new(0.5,0,0,35)
-    btn.Position = UDim2.new(0.25,0,0,100)
-    btn.BackgroundColor3 = Color3.fromRGB(0,170,0)
-    btn.Text = "Teleport & Fly"
-    btn.Font = Enum.Font.GothamBold
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.TextSize = 18
-
-    btn.MouseButton1Click:Connect(function()
-        local text = inputBox.Text
-        local x,y,z = text:match("([^,]+),([^,]+),([^,]+)")
-        if x and y and z then
-            x,y,z = tonumber(x), tonumber(y), tonumber(z)
-            if x and y and z then
-                hrp.CFrame = CFrame.new(x,y,z)
-                teleportFrame:Destroy()
-
-                -- Aloita lento
-                if bodyVelocity then bodyVelocity:Destroy() end
-                flying = true
-                bodyVelocity = Instance.new("BodyVelocity", hrp)
-                bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-                bodyVelocity.Velocity = Vector3.new(0,0,0)
-
-                -- Hallinta
-                local conn
-                conn = game:GetService("RunService").Heartbeat:Connect(function()
-                    if not flying then
-                        bodyVelocity:Destroy()
-                        conn:Disconnect()
-                        return
-                    end
-                    local moveDir = Vector3.new(0,0,0)
-                    if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + hrp.CFrame.LookVector end
-                    if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - hrp.CFrame.LookVector end
-                    if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - hrp.CFrame.RightVector end
-                    if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + hrp.CFrame.RightVector end
-                    if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0,1,0) end
-                    if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0,1,0) end
-
-                    if moveDir.Magnitude > 0 then
-                        bodyVelocity.Velocity = moveDir.Unit * 60
-                    else
-                        bodyVelocity.Velocity = Vector3.new(0,0,0)
-                    end
-                end)
-            else
-                warn("Invalid coordinates")
-            end
-        else
-            warn("Invalid input format")
-        end
-    end)
 end
 
 local function buildAllGames()
@@ -214,13 +223,21 @@ local function buildAllGames()
     local flyBtn = Instance.new("TextButton", content)
     flyBtn.Size = UDim2.new(0.8, 0, 0, 40)
     flyBtn.Position = UDim2.new(0.1, 0, 0, 10)
-    flyBtn.Text = "Fly (Choose teleport location)"
+    flyBtn.Text = flying and "Stop Fly" or "Start Fly"
     flyBtn.Font = Enum.Font.Gotham
     flyBtn.TextSize = 18
     flyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     flyBtn.TextColor3 = Color3.new(1,1,1)
 
-    flyBtn.MouseButton1Click:Connect(flyMode)
+    flyBtn.MouseButton1Click:Connect(function()
+        if flying then
+            stopFly()
+            flyBtn.Text = "Start Fly"
+        else
+            startFly()
+            flyBtn.Text = "Stop Fly"
+        end
+    end)
 end
 
 -- Tabit ylös
